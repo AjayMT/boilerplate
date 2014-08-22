@@ -18,9 +18,10 @@ Options:
 """
 
 import docopt
+import os
 from urllib import urlretrieve
 from subprocess import call
-from os import remove
+from shutil import move
 
 
 def get_boilerplate_type(name):
@@ -48,17 +49,22 @@ def main(argv):
         call([arg for arg in args if arg])
 
     elif bp_type == 'zip' or bp_type == 'tar':
-        contents = urlretrieve(name)
-        open('/tmp/bp-file', 'w').write(contents)
-        archive_path = '/tmp/bp-file'
-        args = ['unzip', archive_path]
-        args += ['-d', dest] if dest else []
+        archive_path = os.path.join('/', 'tmp', 'bp-file')
+        urlretrieve(name, archive_path)
+        dirname = dest or '.'.join(name.split('/')[-1].split('.')[:-1])
+        args = ['unzip', archive_path, '-d', dirname]
         if bp_type == 'tar':
-            args = ['tar', 'xf', archive_path]
-            args += ['-C', dest] if dest else []
+            if not os.path.exists(dirname): os.makedirs(dirname)
+            args = ['tar', 'xf', archive_path, '-C', dirname]
 
         call(args)
-        remove(archive_path)
+        os.remove(archive_path)
+        if bp_type == 'tar':
+            for file in os.listdir(os.path.join(dirname, 'package')):
+                move(os.path.join(dirname, 'package', file),
+                     os.path.join(dirname, file))
+
+            os.rmdir(os.path.join(dirname, 'package'))
 
 
 if __name__ == '__main__':
