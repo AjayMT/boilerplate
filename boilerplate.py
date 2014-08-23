@@ -17,11 +17,11 @@ Options:
   --version    Display version number and exit.
 """
 
-import docopt
 import os
+from docopt import docopt
 from urllib import urlretrieve
-from subprocess import call
 from shutil import move
+from subprocess import call
 
 
 def get_boilerplate_type(name):
@@ -68,4 +68,4 @@ def main(argv):
 
 
 if __name__ == '__main__':
-    main(docopt.docopt(__doc__, version='0.0.1'))
+    main(docopt(__doc__, version='0.0.1'))
