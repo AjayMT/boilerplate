@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from distutils.core import setup
+from setuptools import setup
 
 setup(
     name='boilerplate',
@@ -8,8 +8,8 @@ setup(
     description='A tool to quickly and easily clone project boilerplates',
     author='Ajay MT',
     author_email='ajaymt@icloud.com',
-    url='http://github.com/code-boilerplates/boilerplate'
-    keywords='boilerplate code project clone tool template'
+    url='http://github.com/code-boilerplates/boilerplate',
+    keywords='boilerplate code project clone tool template',
     py_modules=['boilerplate'],
     requires=[
         'docopt (<1.0.0, >=0.6.2)'
