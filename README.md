@@ -20,5 +20,8 @@ Where `<boilerplate-name>` can be a `<user>/<repo>` stub of a github/bitbucket r
 
 `--version` will output the version number and exit.
 
+## License
+MIT License. See `./LICENSE` for details.
+
 ## Contributing
 Please contribute! Boilerplate is still very incomplete, so I would welcome help and contributions. Boilerplate is written in python, so it would be best if you tried to follow the PEP8 style guide as much as possible.
