@@ -3,20 +3,20 @@
 from setuptools import setup
 
 setup(
-    name='boilerplate',
+    name='bp',
     version='0.0.1',
     description='A tool to quickly and easily clone project boilerplates',
     author='Ajay MT',
     author_email='ajaymt@icloud.com',
-    url='http://github.com/code-boilerplates/boilerplate',
-    keywords='boilerplate code project clone tool template',
-    py_modules=['boilerplate'],
+    url='http://github.com/code-boilerplates/bp',
+    keywords='boilerplate code project clone tool template bp',
+    py_modules=['bp'],
     requires=[
         'docopt (<1.0.0, >=0.6.2)'
     ],
     entry_points={
         'console_scripts': [
-            'boilerplate = boilerplate'
+            'bp = bp'
         ]
     },
     classifiers=[

@@ -1,4 +1,4 @@
-# boilerplate
+# bp
 is a tool to quickly and easily create projects.
 
 It allows you to easily clone/download various project boilerplates, either as git repositories or tarballs/zipballs.
@@ -8,7 +8,7 @@ TODO
 
 ## Usage
 ```
-boilerplate <boilerplate-name> [<destination>] [--github | --bitbucket]
+bp <boilerplate-name> [<destination>] [--github | --bitbucket]
 ```
 Where `<boilerplate-name>` can be a `<user>/<repo>` stub of a github/bitbucket repository, or a git clone URL, or a link to a zipball/tarball, and `<destination>` is the destination directory.
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Usage: boilerplate <boilerplate-name> [<destination>] [--github | --bitbucket]
+Usage: bp <boilerplate-name> [<destination>] [--github | --bitbucket]
 
 Where <boilerplate-name> can be a <user>/<repo> stub of
 a github/bitbucket repository, or a git clone URL, or a
