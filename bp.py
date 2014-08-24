@@ -23,6 +23,8 @@ from urllib import urlretrieve
 from shutil import move
 from subprocess import call
 
+VERSION = '0.0.2'
+
 
 def get_boilerplate_type(name):
     if len(name.split('/')) == 2: return 'user/repo'
@@ -32,7 +34,10 @@ def get_boilerplate_type(name):
         if name.endswith('.git'): return 'git'
 
 
-def main(argv):
+def main(argv=None):
+    if not argv:
+        argv = docopt(__doc__, version=VERSION)
+
     name = argv['<boilerplate-name>']
     bp_type = get_boilerplate_type(name)
     src = 'github' if not argv['--bitbucket'] else 'bitbucket'
@@ -68,4 +73,4 @@ def main(argv):
 
 
 if __name__ == '__main__':
-    main(docopt(__doc__, version='0.0.1'))
+    main(docopt(__doc__, version=VERSION))
