@@ -4,7 +4,13 @@ is a tool to quickly and easily create projects.
 It allows you to easily clone/download various project boilerplates, either as git repositories or tarballs/zipballs.
 
 ## Installation
-TODO
+You should have Python 2.7. This is the system python on OS X and most Linux distributions.
+
+```sh
+git clone http://github.com/code-boilerplates/bp.git # Or download a zip/tar and extract it
+cd bp
+python setup.py install
+```
 
 ## Usage
 ```
