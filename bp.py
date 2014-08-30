@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Usage: bp <boilerplate-name> [<destination>] [--github | --bitbucket]
+Usage: bp <boilerplate-name> [<destination>] [--github | --bitbucket] [-p]
 
 Where <boilerplate-name> can be a <user>/<repo> stub of
 a github/bitbucket repository, or a git clone URL, or a
@@ -9,61 +9,44 @@ link to a zipball/tarball, and <destination> is the
 destination directory.
 
 Options:
-  --github     When <boilerplate-name> is in the form of <user>/<repo>,
-               clone the boilerplate from GitHub. This is the default.
-  --bitbucket  When <boilerplate-name> is in the form of <user>/<repo>,
-               clone the boilerplate from Bitbucket.
-  --help -h    Display this help message and exit.
-  --version    Display version number and exit.
+  -p, --preserve-vcs  Don't delete .git, .hg or .svn folders after
+                      cloning the boilerplate.
+  --github            When <boilerplate-name> is in the form of <user>/<repo>,
+                      clone the boilerplate from GitHub. This is the default.
+  --bitbucket         When <boilerplate-name> is in the form of <user>/<repo>,
+                      clone the boilerplate from Bitbucket.
+  -h, --help          Display this help message and exit.
+  --version           Display version number and exit.
 """
 
 import os
+import shutil
 from sys import stderr
 from docopt import docopt
 from urllib import urlretrieve
-from shutil import move
 from subprocess import call
 
 VERSION = '0.0.2'
 
 
-def get_leaf_nodes(path):
-    if os.path.isfile(path): return [path]
+def get_files(dirname):
+    files = []
+    for root, dirnames, filenames in os.walk(dirname):
+        files += [os.path.join(root, f) for f in filenames]
 
-    paths = []
-    contents = os.listdir(path)
-    for file in contents:
-        filepath = os.path.join(path, file)
-        if os.path.isfile(filepath) or len(os.listdir(filepath)) == 0:
-            paths.append(filepath)
-        else:
-            paths += get_leaf_nodes(filepath)
-
-    return paths
+    return files
 
 
-def rename_all(paths, pattern, replacement):
-    remove_leaf = lambda p: '/'.join(p.split('/')[:-1])
-    for path in paths:
-        leaf = path.split('/')[-1]
-        leaf_name = '.'.join(leaf.split('.')[:-1])
-        leaf_ext = leaf.split('.')[-1]
-        location = remove_leaf(path)
-        if pattern in leaf_name:
-            new_name = '.'.join([leaf_name.replace(pattern, replacement),
-                                 leaf_ext])
-            os.rename(path, os.path.join(location, new_name))
-
-    next_paths = [remove_leaf(path) for path in paths
-                  if remove_leaf(path) != '']
-    if next_paths == []:
-        rename_all(next_paths, pattern, replacement)
+def rename_all(dirname, pattern, replacement):
+    for root, dirs, files in os.walk(dirname):
+        for name in dirs + files:
+            os.rename(os.path.join(root, name),
+                      os.path.join(root, name.replace(pattern, replacement)))
 
 
 def modify_files(dirname, pattern, replacement):
-    paths = [f for f in get_leaf_nodes(dirname)
-             if os.path.isfile(f)
-             and not any([s in f for s in ('.git', '.hg', '.svn')])]
+    paths = [f for f in get_files(dirname)
+             if not any([s in f for s in ('.git', '.hg', '.svn')])]
     for path in paths:
         try:
             f = open(path, 'r+')
@@ -120,12 +103,12 @@ def main(argv=None):
         os.remove(archive_path)
         if bp_type == 'tar':
             for file in os.listdir(os.path.join(dirname, 'package')):
-                move(os.path.join(dirname, 'package', file),
-                     os.path.join(dirname, file))
+                shutil.move(os.path.join(dirname, 'package', file),
+                            os.path.join(dirname, file))
 
             os.rmdir(os.path.join(dirname, 'package'))
 
-    rename_all(get_leaf_nodes(dirname), '@name@', dirname)
+    rename_all(dirname, '@name@', dirname)
     modify_files(dirname, '@name@', dirname)
 
 
