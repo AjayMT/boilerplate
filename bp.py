@@ -2,6 +2,8 @@
 
 """
 Usage: bp <boilerplate-name> [<destination>] [--github | --bitbucket] [-p]
+       bp (--help | -h)
+       bp --version
 
 Where <boilerplate-name> can be a <user>/<repo> stub of
 a github/bitbucket repository, or a git clone URL, or a
@@ -74,6 +76,7 @@ def main(argv=None):
     name = argv['<boilerplate-name>']
     bp_type = get_boilerplate_type(name)
     src = 'github' if not argv['--bitbucket'] else 'bitbucket'
+    preserve_vcs = argv['--preserve-vcs']
     dest = argv['<destination>']
     dirname = dest
 
@@ -107,6 +110,11 @@ def main(argv=None):
                             os.path.join(dirname, file))
 
             os.rmdir(os.path.join(dirname, 'package'))
+
+    if not preserve_vcs:
+        for path in [os.path.join(dirname, p)
+                     for p in ('.git', '.hg', '.svn')]:
+            if os.path.exists(path): shutil.rmtree(path)
 
     rename_all(dirname, '@name@', dirname)
     modify_files(dirname, '@name@', dirname)
