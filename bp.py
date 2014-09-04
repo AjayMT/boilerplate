@@ -25,11 +25,11 @@ Options:
 """
 
 import os
-import shutil
-import tempfile
 import tarfile
 import zipfile
 from sys import stderr
+from shutil import rmtree
+from tempfile import gettempdir
 from docopt import docopt
 from urllib2 import urlopen
 from subprocess import call
@@ -112,7 +112,7 @@ def main(argv=None):
 
     elif bp_type == 'zip' or bp_type == 'tar':
         archive_ext = '.zip' if bp_type == 'zip' else '.tgz'
-        archive_path = os.path.join(tempfile.gettempdir(),
+        archive_path = os.path.join(gettempdir(),
                                     'bp-file' + archive_ext)
         archive_name = '.'.join(name.split('/')[-1].split('.')[:-1])
         archive = None
@@ -131,7 +131,7 @@ def main(argv=None):
     if not preserve_vcs:
         for path in [os.path.join(dirname, p)
                      for p in ('.git', '.hg', '.svn')]:
-            if os.path.exists(path): shutil.rmtree(path)
+            if os.path.exists(path): rmtree(path)
 
     rename_all(dirname, '@name@', dirname)
     modify_files(dirname, '@name@', dirname)
