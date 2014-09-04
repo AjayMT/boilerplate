@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
 """
-Usage: bp <boilerplate-name> [<destination>] [--github | --bitbucket] [-p]
+Usage: bp <boilerplate-name> [<destination>]
+         [--github | --bitbucket] [-p] [--type=(zip | tar | git)]
        bp (--help | -h)
        bp --version
 
@@ -17,15 +18,20 @@ Options:
                       clone the boilerplate from GitHub. This is the default.
   --bitbucket         When <boilerplate-name> is in the form of <user>/<repo>,
                       clone the boilerplate from Bitbucket.
+  --type=<type>       Assume that <boilerplate-name> is a zipball, tarball, or
+                      a git repository, instead of inferring the type.
   -h, --help          Display this help message and exit.
   --version           Display version number and exit.
 """
 
 import os
 import shutil
+import tempfile
+import tarfile
+import zipfile
 from sys import stderr
 from docopt import docopt
-from urllib import urlretrieve
+from urllib2 import urlopen
 from subprocess import call
 
 VERSION = '0.0.2'
@@ -61,6 +67,13 @@ def modify_files(dirname, pattern, replacement):
             continue
 
 
+def download_file(url, path):
+    contents = urlopen(url).read()
+    f = open(path, 'w')
+    f.write(contents)
+    f.close()
+
+
 def get_boilerplate_type(name):
     if len(name.split('/')) == 2: return 'user/repo'
     if name.startswith(('http://', 'https://')):
@@ -74,11 +87,16 @@ def main(argv=None):
         argv = docopt(__doc__, version=VERSION)
 
     name = argv['<boilerplate-name>']
-    bp_type = get_boilerplate_type(name)
+    bp_type = get_boilerplate_type(name) if not argv['--type'] else argv['--type']
     src = 'github' if not argv['--bitbucket'] else 'bitbucket'
     preserve_vcs = argv['--preserve-vcs']
     dest = argv['<destination>']
     dirname = dest
+
+    if argv['--type'] and not dest:
+        print 'You must supply a target directory when using the --type option.'
+        dest = raw_input('Target directory: ')
+        dirname = dest
 
     if bp_type == 'user/repo' or bp_type == 'git':
         url = name
@@ -93,23 +111,22 @@ def main(argv=None):
         dirname = repo_name if not dirname else dest
 
     elif bp_type == 'zip' or bp_type == 'tar':
-        archive_path = os.path.join('/', 'tmp', 'bp-file')
-        urlretrieve(name, archive_path)
+        archive_ext = '.zip' if bp_type == 'zip' else '.tgz'
+        archive_path = os.path.join(tempfile.gettempdir(),
+                                    'bp-file' + archive_ext)
         archive_name = '.'.join(name.split('/')[-1].split('.')[:-1])
+        archive = None
         dirname = archive_name if not dirname else dest
-        args = ['unzip', archive_path, '-d', dirname]
-        if bp_type == 'tar':
-            if not os.path.exists(dirname): os.makedirs(dirname)
-            args = ['tar', 'xf', archive_path, '-C', dirname]
 
-        call(args)
+        download_file(name, archive_path)
+        if bp_type == 'tar':
+            archive = tarfile.open(archive_path)
+        elif bp_type == 'zip':
+            archive = zipfile.ZipFile(archive_path, 'r')
+
+        archive.extractall(path=dirname)
+        archive.close()
         os.remove(archive_path)
-        if bp_type == 'tar':
-            for file in os.listdir(os.path.join(dirname, 'package')):
-                shutil.move(os.path.join(dirname, 'package', file),
-                            os.path.join(dirname, file))
-
-            os.rmdir(os.path.join(dirname, 'package'))
 
     if not preserve_vcs:
         for path in [os.path.join(dirname, p)
