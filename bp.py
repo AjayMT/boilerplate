@@ -105,7 +105,7 @@ def main(argv=None):
             url += 'github.com/' if src == 'github' else 'bitbucket.org/'
             url += name + '.git'
 
-        args = ['git', 'clone', url, dest]
+        args = ['command', 'git', 'clone', url, dest]
         call([arg for arg in args if arg])
         repo_name = '.'.join(url.split('/')[-1].split('.')[:-1])
         dirname = repo_name if not dirname else dest
@@ -118,23 +118,29 @@ def main(argv=None):
         archive = None
         dirname = archive_name if not dirname else dest
 
+        print 'Downloading...'
         download_file(name, archive_path)
         if bp_type == 'tar':
-            archive = tarfile.open(archive_path)
+            archive = tarfile.open(archive_path, 'r')
         elif bp_type == 'zip':
             archive = zipfile.ZipFile(archive_path, 'r')
 
+        print 'Extracting...'
         archive.extractall(path=dirname)
         archive.close()
         os.remove(archive_path)
 
     if not preserve_vcs:
+        print 'Removing .git/.hg/.svn folder...'
         for path in [os.path.join(dirname, p)
                      for p in ('.git', '.hg', '.svn')]:
             if os.path.exists(path): rmtree(path)
 
+    print 'Renaming files and directories...'
     rename_all(dirname, '@name@', dirname)
+    print 'Changing file contents...'
     modify_files(dirname, '@name@', dirname)
+    print 'done.'
 
 
 if __name__ == '__main__':
