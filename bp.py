@@ -38,6 +38,11 @@ VERSION = '0.0.2'
 
 
 def get_files(dirname):
+    """Gets and returns a list of files from a directory tree.
+
+    Arguments:
+    dirname -- the path of the directory to get the files from
+    """
     files = []
     for root, dirnames, filenames in os.walk(dirname):
         files += [os.path.join(root, f) for f in filenames]
@@ -46,6 +51,14 @@ def get_files(dirname):
 
 
 def rename_all(dirname, pattern, replacement):
+    """Search for and rename multiple files and directories in a
+    directory tree.
+
+    Arguments:
+    dirname -- the path of the directory to search
+    pattern -- the pattern used to search for files/direcories
+    replacement -- the string that replaces 'pattern' in file/directory names
+    """
     for root, dirs, files in os.walk(dirname):
         for name in dirs + files:
             os.rename(os.path.join(root, name),
@@ -53,6 +66,16 @@ def rename_all(dirname, pattern, replacement):
 
 
 def modify_files(dirname, pattern, replacement):
+    """Replace a specific pattern with a replacement string in the contents
+    of all files in a directory tree.
+
+    Arguments:
+    dirname -- the path of the directory to rename files in
+    pattern -- the pattern to replace in the contents of the files
+    replacement -- the string to replace the pattern with in the contents
+      of the files
+    """
+    # We don't want to modify files that are in .git, .hg or .svn directories
     paths = [f for f in get_files(dirname)
              if not any([s in f for s in ('.git', '.hg', '.svn')])]
     for path in paths:
@@ -68,6 +91,12 @@ def modify_files(dirname, pattern, replacement):
 
 
 def download_file(url, path):
+    """Download a file and save it to a location.
+
+    Arguments:
+    url -- the URL of the file
+    path -- the path at which the file will be saved
+    """
     contents = urlopen(url).read()
     f = open(path, 'w')
     f.write(contents)
@@ -75,6 +104,7 @@ def download_file(url, path):
 
 
 def get_boilerplate_type(name):
+    """Get the boilerplate type based on the boilerplate name."""
     if len(name.split('/')) == 2: return 'user/repo'
     if name.startswith(('http://', 'https://')):
         if name.endswith('.zip'): return 'zip'
@@ -86,6 +116,9 @@ def main(argv=None):
     if not argv:
         argv = docopt(__doc__, version=VERSION)
 
+    # We only support GitHub and Bitbucket as <user>/<repo> sources for now
+    # The type specified with the --type option takes precedence
+    # over the the type we infer based on <boilerplate-name>
     name = argv['<boilerplate-name>']
     bp_type = get_boilerplate_type(name) if not argv['--type'] else argv['--type']
     src = 'github' if not argv['--bitbucket'] else 'bitbucket'
@@ -94,6 +127,7 @@ def main(argv=None):
     dirname = dest
 
     if argv['--type'] and not dest:
+        # We won't try to guess a destination when the type is specified
         print 'You must supply a target directory when using the --type option.'
         dest = raw_input('Target directory: ')
         dirname = dest
@@ -105,12 +139,18 @@ def main(argv=None):
             url += 'github.com/' if src == 'github' else 'bitbucket.org/'
             url += name + '.git'
 
+        # We only use the following list comprehension because 'dest'
+        # may be None, in which case we'll let git decide
+        # what the destination should be
+        # We guess repo_name based on the repository URL
         args = ['command', 'git', 'clone', url, dest]
         call([arg for arg in args if arg])
         repo_name = '.'.join(url.split('/')[-1].split('.')[:-1])
         dirname = repo_name if not dirname else dest
 
     elif bp_type == 'zip' or bp_type == 'tar':
+        # We guess archive_name based on the URL of the tarball/zipball
+        # i.e the boilerplate name
         archive_ext = '.zip' if bp_type == 'zip' else '.tgz'
         archive_path = os.path.join(gettempdir(),
                                     'bp-file' + archive_ext)
@@ -132,10 +172,14 @@ def main(argv=None):
 
     if not preserve_vcs:
         print 'Removing .git/.hg/.svn folder...'
+        # We only remove .git, .hg and .svn folders for now, because
+        # these are the mainstream VCSs
         for path in [os.path.join(dirname, p)
                      for p in ('.git', '.hg', '.svn')]:
             if os.path.exists(path): rmtree(path)
 
+    # '@name@' is the pattern that is replaced in the file/directory names
+    # and file contents
     print 'Renaming files and directories...'
     rename_all(dirname, '@name@', dirname)
     print 'Changing file contents...'
