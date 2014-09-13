@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name='bp',
-    version='0.0.1',
+    version='0.5.0',
     description='A tool to quickly and easily clone project boilerplates',
     author='Ajay MT',
     author_email='ajaymt@icloud.com',
