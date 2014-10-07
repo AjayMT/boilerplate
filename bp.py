@@ -80,9 +80,10 @@ def modify_files(dirname, pattern, replacement):
              if not any([s in f for s in ('.git', '.hg', '.svn')])]
     for path in paths:
         try:
-            f = open(path, 'r+')
+            f = open(path)
             contents = f.read().replace(pattern, replacement)
-            f.seek(0)
+            f.close()
+            f = open(path, 'w')
             f.write(contents)
             f.close()
         except IOError:
