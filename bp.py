@@ -34,7 +34,7 @@ from docopt import docopt
 from urllib2 import urlopen
 from subprocess import call
 
-VERSION = '0.5.2'
+VERSION = '0.5.3'
 
 
 def get_files(dirname):
