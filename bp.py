@@ -114,9 +114,6 @@ def get_boilerplate_type(name):
 
 
 def main(argv=None):
-    if not argv:
-        argv = docopt(__doc__, version=VERSION)
-
     # We only support GitHub and Bitbucket as <user>/<repo> sources for now
     # The type specified with the --type option takes precedence
     # over the the type we infer based on <boilerplate-name>
